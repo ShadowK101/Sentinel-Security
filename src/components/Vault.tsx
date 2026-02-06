@@ -67,7 +67,7 @@ export function Vault() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search credentials..." 
-            className="pl-10 h-11 bg-secondary/30 border-none"
+            className="pl-10 h-11 bg-secondary/30 border-none focus-visible:ring-primary/30"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -86,9 +86,9 @@ export function Vault() {
             <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="h-6 w-6 text-muted-foreground opacity-50" />
             </div>
-            <h4 className="text-sm font-semibold text-white mb-1">Your vault is empty</h4>
+            <h4 className="text-sm font-semibold text-white mb-1">No credentials found</h4>
             <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">
-              {search ? "No results match your search." : "Generated passwords you save will appear here."}
+              {search ? "No results match your search parameters." : "Generated passwords you save will appear here securely."}
             </p>
           </div>
         ) : (

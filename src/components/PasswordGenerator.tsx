@@ -42,9 +42,12 @@ export default function PasswordGenerator() {
     excludeAmbiguous: false
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Vault Action States
   const [vaultLabel, setVaultLabel] = useState('');
   const [vaultUsername, setVaultUsername] = useState('');
   const [vaultPassword, setVaultPassword] = useState('');
+  
   const { toast } = useToast();
 
   const generate = useCallback(async () => {
@@ -73,6 +76,7 @@ export default function PasswordGenerator() {
       result += charset[array[i] % charset.length];
     }
     setPassword(result);
+    // Automatically update the vault password field with the generated one
     setVaultPassword(result);
     setIsGenerating(false);
   }, [length, options]);
@@ -113,8 +117,12 @@ export default function PasswordGenerator() {
     
     addDocumentNonBlocking(credentialsRef, newCredential);
     
+    // Clear the specific fields after saving
     setVaultLabel('');
-    toast({ title: "Saved to Vault", description: "The credential has been securely stored in your cloud vault." });
+    toast({ 
+      title: "Saved to Vault", 
+      description: `"${vaultLabel}" has been securely stored in your cloud vault.` 
+    });
   };
 
   return (
@@ -227,7 +235,7 @@ export default function PasswordGenerator() {
         </CardContent>
       </Card>
 
-      <div className="bg-card border rounded-xl p-6 space-y-5">
+      <div className="bg-card border rounded-xl p-6 space-y-5 shadow-inner shadow-black/20">
         <div className="flex items-center gap-2 mb-2">
           <Settings2 className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold uppercase tracking-wider">Vault Actions</h3>
@@ -241,9 +249,10 @@ export default function PasswordGenerator() {
               value={vaultLabel} 
               onChange={(e) => setVaultLabel(e.target.value)}
               disabled={!user}
-              className="bg-secondary/50"
+              className="bg-secondary/50 focus-visible:ring-primary/50"
             />
           </div>
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Username / Email</Label>
@@ -252,9 +261,10 @@ export default function PasswordGenerator() {
                 value={vaultUsername} 
                 onChange={(e) => setVaultUsername(e.target.value)}
                 disabled={!user}
-                className="bg-secondary/50"
+                className="bg-secondary/50 focus-visible:ring-primary/50"
               />
             </div>
+            
             <div className="space-y-2">
               <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Password to Save</Label>
               <div className="relative">
@@ -264,7 +274,7 @@ export default function PasswordGenerator() {
                   value={vaultPassword} 
                   onChange={(e) => setVaultPassword(e.target.value)}
                   disabled={!user}
-                  className="bg-secondary/50 pr-10 font-mono"
+                  className="bg-secondary/50 pr-10 font-mono focus-visible:ring-primary/50"
                 />
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               </div>
@@ -274,14 +284,14 @@ export default function PasswordGenerator() {
 
         <Button 
           disabled={!user || !vaultPassword || !vaultLabel} 
-          className="w-full gap-2 h-12 text-sm font-bold shadow-lg shadow-primary/20"
+          className="w-full gap-2 h-12 text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-[0.98]"
           onClick={saveToVault}
         >
           <Save className="h-4 w-4" /> Save Entry to Vault
         </Button>
         
         {!user && (
-          <p className="text-[10px] text-muted-foreground text-center">
+          <p className="text-[10px] text-muted-foreground text-center animate-pulse">
             Sign in with Google to enable the secure cloud vault feature.
           </p>
         )}
