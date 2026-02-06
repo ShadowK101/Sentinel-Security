@@ -1,0 +1,215 @@
+{
+  "entities": {
+    "Vault": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Vault",
+      "type": "object",
+      "description": "Represents a user's encrypted password vault.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Vault entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Vault)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user-defined name of the vault."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description of the vault."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp of when the vault was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The timestamp of when the vault was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Credential": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Credential",
+      "type": "object",
+      "description": "Represents a single username/password/secret entry stored in a vault.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Credential entity."
+        },
+        "vaultId": {
+          "type": "string",
+          "description": "Reference to Vault. (Relationship: Vault 1:N Credential)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user-defined name of the credential (e.g., 'Gmail', 'Bank Account')."
+        },
+        "username": {
+          "type": "string",
+          "description": "The username or account name."
+        },
+        "password": {
+          "type": "string",
+          "description": "The password or secret value. This is expected to be encrypted before storage."
+        },
+        "url": {
+          "type": "string",
+          "description": "Optional URL associated with the credential.",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or additional information."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp of when the credential was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The timestamp of when the credential was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "vaultId",
+        "name",
+        "username",
+        "password",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "googleId": {
+          "type": "string",
+          "description": "The unique identifier provided by Google Sign-In."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp of when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The timestamp of when the user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "googleId",
+        "email",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. This path is the root for all user-owned data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/vaults/{vaultId}",
+        "definition": {
+          "entityName": "Vault",
+          "schema": {
+            "$ref": "#/backend/entities/Vault"
+          },
+          "description": "Stores user's vault data. Each vault is owned by the user identified by userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "vaultId",
+              "description": "The unique identifier of the vault."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/vaults/{vaultId}/credentials/{credentialId}",
+        "definition": {
+          "entityName": "Credential",
+          "schema": {
+            "$ref": "#/backend/entities/Credential"
+          },
+          "description": "Stores credentials associated with a specific vault. Inherits ownership from the vault and user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "vaultId",
+              "description": "The unique identifier of the vault."
+            },
+            {
+              "name": "credentialId",
+              "description": "The unique identifier of the credential."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, aligning with the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). \n\nTo achieve Authorization Independence, the structure avoids hierarchical authorization dependencies (`get()` calls in security rules). For instance, access to vaults and credentials is based on the `userId` and not through evaluating the parent document. The structure prioritizes path-based ownership for private user data. Data segregation is achieved by placing user-specific data under `/users/{userId}`, ensuring each collection has a homogeneous security posture.\n\nThe structure facilitates secure `list` operations by structuring data in a way that ownership is clearly defined in the path. For example, listing vaults is done under the `/users/{userId}/vaults` path. Roles are stored implicitly via path ownership. The data model uses explicit state modeling by relying on the Firestore path for ownership. No dynamic keys are used, and naming conventions are followed consistently.\n\nOwnership: Vaults and credentials are owned by individual users. Thus, the structure uses hierarchical paths under /users/{userId} for storing vaults and their associated credentials, this ensures ownership and simplifies security rules.\n\n"
+  }
+}
