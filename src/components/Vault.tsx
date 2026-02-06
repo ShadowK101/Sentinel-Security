@@ -12,7 +12,7 @@ import { useUser, useFirestore, useCollection, deleteDocumentNonBlocking, useMem
 import { collection, doc } from 'firebase/firestore';
 
 export function Vault() {
-  const { user } = useUser();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
   const [search, setSearch] = useState('');
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
@@ -23,7 +23,7 @@ export function Vault() {
     return collection(firestore, 'users', user.uid, 'vaults', 'default', 'credentials');
   }, [firestore, user?.uid]);
 
-  const { data: entries, isLoading } = useCollection(credentialsQuery);
+  const { data: entries, isLoading: isDataLoading } = useCollection(credentialsQuery);
 
   const deleteEntry = (id: string) => {
     if (!firestore || !user) return;
@@ -40,11 +40,13 @@ export function Vault() {
   };
 
   const filteredEntries = (entries || []).filter(e => 
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
+    e.name?.toLowerCase().includes(search.toLowerCase()) ||
     (e.username && e.username.toLowerCase().includes(search.toLowerCase()))
   );
 
-  if (!user) {
+  const isLoading = isAuthLoading || (isDataLoading && !entries);
+
+  if (!user && !isAuthLoading) {
     return (
       <Card className="border-dashed bg-card/20">
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -75,7 +77,7 @@ export function Vault() {
       </div>
 
       <div className="grid gap-4">
-        {isLoading && !entries ? (
+        {isLoading ? (
           <div className="flex flex-col gap-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="h-24 w-full bg-secondary/20 animate-pulse rounded-xl border border-border/50" />
@@ -110,7 +112,7 @@ export function Vault() {
                     <div className="flex items-center gap-2 font-mono text-sm">
                       {revealedIds.has(entry.id) ? (
                         <span className="text-primary font-bold animate-in fade-in slide-in-from-left-1">
-                          {simpleDecrypt(entry.password, user.uid)}
+                          {simpleDecrypt(entry.password, user!.uid)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground tracking-[0.3em] text-xs">••••••••••••••••</span>

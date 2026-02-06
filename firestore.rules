@@ -3,86 +3,29 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * SENTINEL SECURITY RULES DOCUMENTATION
-     *
-     * Core Philosophy:
-     * This ruleset implements a strict Path-Based Ownership model. All application data (Users, Vaults, 
-     * and Credentials) is organized hierarchically under a specific user's ID. Access is granted 
-     * exclusively to the authenticated user whose UID matches the 'userId' in the document path.
-     *
-     * Data Structure:
-     * - /users/{userId}: The root user profile.
-     * - /users/{userId}/vaults/{vaultId}: Secure containers for credentials, owned by the user.
-     * - /users/{userId}/vaults/{vaultId}/credentials/{credentialId}: Individual secrets nested within vaults.
-     *
-     * Key Security Decisions:
-     * 1. Authorization Independence: Rules rely on the document path rather than cross-document 
-     *    lookups (get() calls). This ensures high performance and prevents complex dependency chains.
-     * 2. Prototyping Mode: While authorization (who can access) is strictly enforced, the specific 
-     *    data schema (field types and shapes) is not validated to allow for rapid development.
-     * 3. Relational Integrity: On creation, the rules enforce that internal foreign keys 
-     *    (like userId or vaultId) match the parameters in the URL path.
-     * 4. Immutability: Critical relational links (e.g., the owner of a vault) are made 
-     *    immutable during updates to prevent data hijacking.
+     * SENTINEL SECURITY RULES v2.6.2
+     * Implements a strict Path-Based Ownership model.
      */
 
-    // --- Global Helper Functions ---
-
-    /** Checks if the requester is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the authenticated user's UID matches the provided userId. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** Checks if the user is the owner and the document exists (for updates/deletes). */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for User profiles. Limits access to the specific account owner.
-     * @path /users/{userId}
-     * @allow (get, list, create, update, delete) if request.auth.uid == userId
-     * @deny (create) if the UID in the document body does not match the UID in the path.
-     * @principle Implements self-creation and strict ownership for root user nodes.
-     */
+    // Rules for User profiles
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow get, list, create, update, delete: if isOwner(userId);
 
-      /**
-       * @description Rules for Vaults. Nested under the user to ensure path-based isolation.
-       * @path /users/{userId}/vaults/{vaultId}
-       * @allow (create) if authenticated user matches userId and internal userId matches path.
-       * @deny (list) if a user attempts to view another user's vaults.
-       * @principle Enforces relational integrity between the path and the stored document data.
-       */
+      // Rules for Vaults nested under users
       match /vaults/{vaultId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow get, list, create, update, delete: if isOwner(userId);
 
-        /**
-         * @description Rules for Credentials. Deeply nested to inherit ownership context.
-         * @path /users/{userId}/vaults/{vaultId}/credentials/{credentialId}
-         * @allow (get) if the user owns the parent vault and root user path.
-         * @deny (update) if the vaultId is changed, attempting to move the credential to another vault.
-         * @principle Path-based authorization for high-performance list operations.
-         */
+        // Rules for Credentials nested under vaults
         match /credentials/{credentialId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.vaultId == vaultId;
-          allow update: if isExistingOwner(userId) && request.resource.data.vaultId == resource.data.vaultId;
-          allow delete: if isExistingOwner(userId);
+          allow get, list, create, update, delete: if isOwner(userId);
         }
       }
     }
