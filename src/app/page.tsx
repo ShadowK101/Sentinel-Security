@@ -1,77 +1,42 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Shield, Lock, ChevronRight, LogIn, LogOut, Github, KeySquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
   CardHeader, 
   CardTitle, 
-  CardContent, 
-  CardDescription 
+  CardContent 
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  getAuth, 
-  signInWithPopup, 
   GoogleAuthProvider, 
-  onAuthStateChanged, 
-  signOut,
-  User
+  signInWithPopup, 
+  signOut
 } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
 import { Toaster } from "@/components/ui/toaster";
 import PasswordGenerator from '@/components/PasswordGenerator';
 import { Vault } from '@/components/Vault';
 import { Badge } from '@/components/ui/badge';
-
-// Mock Firebase config for demonstration in this scaffolded environment
-const firebaseConfig = {
-  apiKey: "mock-api-key",
-  authDomain: "sentinel-vault.firebaseapp.com",
-  projectId: "sentinel-vault",
-  storageBucket: "sentinel-vault.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "mock-app-id"
-};
+import { useUser, useAuth } from '@/firebase';
 
 export default function SentinelApp() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const [activeTab, setActiveTab] = useState('generator');
-  const [vaultRefreshTrigger, setVaultRefreshTrigger] = useState(0);
-
-  useEffect(() => {
-    // In a real environment, initialize Firebase properly
-    // For this prototype, we'll simulate the auth state
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleSignIn = async () => {
-    // Note: In this environment, we'll mock a user for demo purposes if real auth fails
     try {
-      const auth = getAuth();
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error) {
-      // Simulate login for preview
-      const mockUser = {
-        uid: "sentinel_mock_user_123",
-        displayName: "Sentinel User",
-        email: "user@sentinel.security",
-        photoURL: "https://picsum.photos/seed/42/100/100"
-      } as User;
-      setUser(mockUser);
+      console.error("Sign in failed", error);
     }
   };
 
   const handleSignOut = async () => {
-    const auth = getAuth();
     await signOut(auth);
-    setUser(null);
   };
 
   return (
@@ -90,10 +55,12 @@ export default function SentinelApp() {
           </div>
 
           <div className="flex items-center gap-4">
-            {user ? (
+            {isUserLoading ? (
+              <div className="h-8 w-24 bg-secondary animate-pulse rounded-full" />
+            ) : user ? (
               <div className="flex items-center gap-3 bg-secondary/50 py-1 pl-1 pr-3 rounded-full border">
                 <img 
-                  src={user.photoURL || "https://picsum.photos/seed/1/32/32"} 
+                  src={user.photoURL || `https://picsum.photos/seed/${user.uid}/32/32`} 
                   className="w-8 h-8 rounded-full border border-primary/20" 
                   alt="Profile"
                 />
@@ -137,20 +104,17 @@ export default function SentinelApp() {
                 >
                   Encrypted Vault
                   {user && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 h-4">Local</Badge>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 h-4">Cloud</Badge>
                   )}
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="generator" className="focus-visible:outline-none">
-                <PasswordGenerator 
-                  userUid={user?.uid || null} 
-                  onVaultUpdate={() => setVaultRefreshTrigger(t => t + 1)}
-                />
+                <PasswordGenerator />
               </TabsContent>
 
               <TabsContent value="vault" className="focus-visible:outline-none">
-                <Vault userUid={user?.uid || null} key={vaultRefreshTrigger} />
+                <Vault />
               </TabsContent>
             </Tabs>
           </section>
@@ -171,7 +135,7 @@ export default function SentinelApp() {
                 <div className="flex gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 animate-pulse" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Local vault is using {user ? 'user-derived' : 'anonymous'} key derivation for at-rest storage.
+                    Vault is using {user ? 'secure Firestore' : 'local anonymous'} storage for at-rest data.
                   </p>
                 </div>
                 <div className="pt-4 border-t border-primary/10">

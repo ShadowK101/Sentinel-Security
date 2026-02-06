@@ -9,7 +9,6 @@ import {
   Save, 
   Zap, 
   BookOpen, 
-  ArrowRight,
   Info
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -24,13 +23,13 @@ import { EntropyMeter } from '@/components/EntropyMeter';
 import { QRCodeDisplay } from '@/components/QRCodeDisplay';
 import { simpleEncrypt } from '@/lib/crypto-utils';
 import { generatePassphrase } from '@/ai/flows/passphrase-generation';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { cn } from '@/lib/utils';
 
-interface PasswordGeneratorProps {
-  userUid: string | null;
-  onVaultUpdate: () => void;
-}
-
-export default function PasswordGenerator({ userUid, onVaultUpdate }: PasswordGeneratorProps) {
+export default function PasswordGenerator() {
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [password, setPassword] = useState('');
   const [length, setLength] = useState(16);
   const [options, setOptions] = useState({
@@ -88,7 +87,7 @@ export default function PasswordGenerator({ userUid, onVaultUpdate }: PasswordGe
 
   useEffect(() => {
     generate();
-  }, []);
+  }, [generate]);
 
   const copyToClipboard = () => {
     if (!password) return;
@@ -98,29 +97,30 @@ export default function PasswordGenerator({ userUid, onVaultUpdate }: PasswordGe
       description: "Credential will be cleared in 30 seconds." 
     });
     
-    // Auto-clear logic as per proposal
     setTimeout(() => {
       navigator.clipboard.writeText('');
     }, 30000);
   };
 
   const saveToVault = () => {
-    if (!userUid || !password || !vaultLabel) return;
+    if (!user || !password || !vaultLabel || !firestore) return;
     
-    const saved = localStorage.getItem(`sentinel_vault_${userUid}`);
-    const entries = saved ? JSON.parse(saved) : [];
+    // We use a fixed 'default' vault ID for the MVP
+    const credentialsRef = collection(firestore, 'users', user.uid, 'vaults', 'default', 'credentials');
     
-    const newEntry = {
-      id: crypto.randomUUID(),
-      label: vaultLabel,
-      encryptedValue: simpleEncrypt(password, userUid),
-      createdAt: Date.now()
+    const newCredential = {
+      name: vaultLabel,
+      username: user.email || 'user',
+      password: simpleEncrypt(password, user.uid),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      vaultId: 'default'
     };
     
-    localStorage.setItem(`sentinel_vault_${userUid}`, JSON.stringify([newEntry, ...entries]));
+    addDocumentNonBlocking(credentialsRef, newCredential);
+    
     setVaultLabel('');
-    toast({ title: "Saved to Vault", description: "The credential has been securely stored locally." });
-    onVaultUpdate();
+    toast({ title: "Saved to Vault", description: "The credential has been securely stored in your cloud vault." });
   };
 
   return (
@@ -139,7 +139,7 @@ export default function PasswordGenerator({ userUid, onVaultUpdate }: PasswordGe
                 <Button variant="secondary" size="icon" className="h-14 w-14" onClick={generate} disabled={isGenerating}>
                   <RefreshCw className={cn("h-5 w-5", isGenerating && "animate-spin")} />
                 </Button>
-                <Button variant="primary" size="icon" className="h-14 w-14" onClick={copyToClipboard}>
+                <Button variant="outline" size="icon" className="h-14 w-14" onClick={copyToClipboard}>
                   <Copy className="h-5 w-5" />
                 </Button>
                 <QRCodeDisplay data={password} />
@@ -258,27 +258,23 @@ export default function PasswordGenerator({ userUid, onVaultUpdate }: PasswordGe
                 placeholder="Entry label (e.g., Google Account)" 
                 value={vaultLabel} 
                 onChange={(e) => setVaultLabel(e.target.value)}
-                disabled={!userUid}
+                disabled={!user}
              />
           </div>
           <Button 
-            disabled={!userUid || !password || !vaultLabel} 
+            disabled={!user || !password || !vaultLabel} 
             className="gap-2"
             onClick={saveToVault}
           >
             <Save className="h-4 w-4" /> Save to Vault
           </Button>
         </div>
-        {!userUid && (
+        {!user && (
           <p className="text-[10px] text-muted-foreground text-center">
-            Sign in with Google to enable the secure local vault feature.
+            Sign in with Google to enable the secure cloud vault feature.
           </p>
         )}
       </div>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }
