@@ -345,7 +345,7 @@ export default function SentinelApp() {
               className="flex items-center gap-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer group"
             >
               <Lock className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-              <span className="font-bold tracking-tight text-foreground">Sentinel v2.6.1.1</span>
+              <span className="font-bold tracking-tight text-foreground">Sentinel v2.6.2</span>
             </button>
             <Link 
               href="/terms" 

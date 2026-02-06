@@ -2,9 +2,10 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { Firestore, doc, serverTimestamp } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { setDocumentNonBlocking } from './non-blocking-updates';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -85,14 +86,15 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
           const vaultRef = doc(firestore, 'users', firebaseUser.uid, 'vaults', 'default');
           
           // Ensure parent documents exist to support path-based security rules
-          setDoc(userRef, {
+          // Using non-blocking helper to ensure background initialization is safe
+          setDocumentNonBlocking(userRef, {
             id: firebaseUser.uid,
             email: firebaseUser.email,
             name: firebaseUser.displayName,
             updatedAt: serverTimestamp(),
           }, { merge: true });
 
-          setDoc(vaultRef, {
+          setDocumentNonBlocking(vaultRef, {
             id: 'default',
             userId: firebaseUser.uid,
             name: 'Primary Vault',
