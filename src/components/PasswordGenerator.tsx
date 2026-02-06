@@ -22,6 +22,12 @@ import { simpleEncrypt } from '@/lib/crypto-utils';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function PasswordGenerator() {
   const { user } = useUser();
@@ -74,14 +80,7 @@ export default function PasswordGenerator() {
   const copyToClipboard = () => {
     if (!password) return;
     navigator.clipboard.writeText(password);
-    toast({ 
-      title: "Copied to clipboard", 
-      description: "Credential will be cleared in 30 seconds." 
-    });
-    
-    setTimeout(() => {
-      navigator.clipboard.writeText('');
-    }, 30000);
+    // Notification and timer removed as requested
   };
 
   const saveToVault = () => {
@@ -194,7 +193,16 @@ export default function PasswordGenerator() {
               />
               <Label htmlFor="ambiguous" className="text-xs cursor-pointer flex items-center gap-1">
                 Exclude ambiguous characters (I, l, 1, O, 0)
-                <Info className="h-3 w-3 text-muted-foreground" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-[10px]">Prevents using characters that look similar (e.g., lowercase 'l' and number '1', or uppercase 'O' and number '0') to avoid transcription errors.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </Label>
             </div>
           </div>
