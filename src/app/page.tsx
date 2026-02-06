@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -20,6 +21,7 @@ import PasswordGenerator from '@/components/PasswordGenerator';
 import { Vault } from '@/components/Vault';
 import { Badge } from '@/components/ui/badge';
 import { useUser, useAuth } from '@/firebase';
+import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
   AccordionItem,
@@ -67,6 +69,7 @@ const bestPractices = [
 export default function SentinelApp() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('generator');
   const [lastChecked, setLastChecked] = useState("");
   const [showTerms, setShowTerms] = useState(false);
@@ -74,13 +77,11 @@ export default function SentinelApp() {
   useEffect(() => {
     setLastChecked(new Date().toLocaleTimeString());
     
-    // Check for terms acceptance
     const accepted = localStorage.getItem('sentinel_terms_accepted');
     if (!accepted) {
       setShowTerms(true);
     }
 
-    // Update every hour (3,600,000 ms)
     const interval = setInterval(() => {
       setLastChecked(new Date().toLocaleTimeString());
     }, 3600000);
@@ -100,8 +101,12 @@ export default function SentinelApp() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Sign in failed", error);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: error.message || "Sign in failed. Please check your domain authorization in Firebase Console.",
+      });
     }
   };
 
@@ -111,7 +116,6 @@ export default function SentinelApp() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-primary selection:text-white">
-      {/* Initial Terms of Service Dialog */}
       <AlertDialog open={showTerms}>
         <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <AlertDialogHeader>
@@ -164,7 +168,6 @@ export default function SentinelApp() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Navigation Header */}
       <header className="border-b border-border/40 bg-card/30 backdrop-blur-xl sticky top-0 z-50">
         <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 group cursor-default">
@@ -209,8 +212,6 @@ export default function SentinelApp() {
 
       <main className="container max-w-5xl mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-[1fr_350px] gap-12 items-start">
-          
-          {/* Main Workspace */}
           <section className="space-y-8">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight text-white">Security Console</h2>
@@ -219,7 +220,7 @@ export default function SentinelApp() {
               </p>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs defaultValue="generator" onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start bg-transparent h-auto p-0 gap-6 border-b rounded-none mb-8">
                 <TabsTrigger 
                   value="generator" 
@@ -248,7 +249,6 @@ export default function SentinelApp() {
             </Tabs>
           </section>
 
-          {/* Sidebar Info */}
           <aside className="space-y-6 hidden lg:block">
             <Card className="bg-primary/5 border-primary/20 overflow-hidden">
               <CardHeader className="pb-2 border-b border-primary/10">
