@@ -70,6 +70,7 @@ export default function SentinelApp() {
   useEffect(() => {
     setLastChecked(new Date().toLocaleTimeString());
     
+    // Check if terms have been accepted previously
     const accepted = localStorage.getItem('sentinel_terms_accepted');
     if (!accepted) {
       setShowTerms(true);
@@ -87,6 +88,7 @@ export default function SentinelApp() {
   };
 
   const handleDenyTerms = () => {
+    // Redirect to google home screen as requested
     window.location.href = 'https://www.google.com';
   };
 
@@ -111,41 +113,43 @@ export default function SentinelApp() {
     await signOut(auth);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen text-foreground selection:bg-primary selection:text-white">
+      {/* Mandatory Terms Acceptance Dialog for first-time visits */}
       <AlertDialog open={showTerms}>
         <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Shield className="h-6 w-6 text-primary" />
-              Welcome to Sentinel
+              Security Protocol: Terms of Service
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              Before you proceed to the secure console, please review and accept our professional Terms of Service.
+              To proceed to the Sentinel Security Console, you must review and accept our professional terms.
             </AlertDialogDescription>
           </AlertDialogHeader>
           
           <div className="flex-1 overflow-y-auto pr-2 my-4 space-y-4 text-sm text-muted-foreground">
             <section>
               <h4 className="font-bold text-foreground">1. Acceptance of Terms</h4>
-              <p>By accessing and using Sentinel, you agree to be bound by these Terms of Service. These terms constitute a legally binding agreement between you and Sentinel Security.</p>
+              <p>By using Sentinel, you agree to these Terms. This application provides advanced cryptographic tools for secure credential management.</p>
             </section>
             <section>
-              <h4 className="font-bold text-foreground">2. Security Responsibility</h4>
-              <p>Sentinel provides cryptographic tools for password generation and storage. The security of your data depends on your own practices, including the strength of your master credentials and the security of your Google account.</p>
+              <h4 className="font-bold text-foreground">2. User Responsibility</h4>
+              <p>You are solely responsible for the master password and the security of your linked Google account. We cannot recover data if you lose access to your primary authentication methods.</p>
             </section>
             <section>
-              <h4 className="font-bold text-foreground">3. Data Privacy & Encryption</h4>
-              <p>We take your privacy seriously. All sensitive data is encrypted before storage. Sentinel staff do not have access to your raw passwords. Your data is stored securely using industry-standard protocols.</p>
+              <h4 className="font-bold text-foreground">3. Encryption & Privacy</h4>
+              <p>All passwords are encrypted locally before being stored in our cloud infrastructure. Sentinel staff cannot view or retrieve your raw credentials.</p>
             </section>
             <section>
-              <h4 className="font-bold text-foreground">4. Limitation of Liability</h4>
-              <p>Sentinel is provided "as is" without any warranties. We are not responsible for any loss of data, unauthorized access, or security breaches resulting from the use or misuse of this software.</p>
+              <h4 className="font-bold text-foreground">4. Liability Limitation</h4>
+              <p>Sentinel is provided "as is". We are not liable for data loss or unauthorized access resulting from improper local security practices.</p>
             </section>
-            <section>
-              <h4 className="font-bold text-foreground">5. Compliance</h4>
-              <p>Users are responsible for ensuring their use of Sentinel complies with all local and international laws regarding cryptography and data management.</p>
-            </section>
+            <p className="text-xs pt-4 italic">A full version of these terms is available at any time via the footer link.</p>
           </div>
 
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -153,13 +157,13 @@ export default function SentinelApp() {
               onClick={handleDenyTerms}
               className="w-full sm:w-auto border-destructive text-destructive hover:bg-destructive hover:text-white"
             >
-              Deny & Exit
+              Deny & Exit to Google
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleAcceptTerms}
               className="w-full sm:w-auto"
             >
-              Accept & Continue
+              Accept & Continue to Console
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -173,7 +177,7 @@ export default function SentinelApp() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight">Sentinel</h1>
-              <p className="text-[10px] uppercase font-bold text-accent tracking-widest leading-none">Password Generator</p>
+              <p className="text-[10px] uppercase font-bold text-accent tracking-widest leading-none">Security Console</p>
             </div>
           </div>
 
@@ -213,7 +217,7 @@ export default function SentinelApp() {
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight text-white">Security Console</h2>
               <p className="text-muted-foreground text-sm max-w-lg">
-                Create unhackable passwords in seconds and keep them safe in your personal encrypted vault. Simple, secure, and always synced.
+                Generate military-grade credentials using high-entropy random generation and store them in your secure cloud vault.
               </p>
             </div>
 
@@ -337,10 +341,13 @@ export default function SentinelApp() {
       <footer className="border-t border-border/40 py-12 mt-20">
         <div className="container max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8 text-xs text-muted-foreground">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex items-center gap-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
-              <Lock className="h-4 w-4 text-primary" />
-              <span className="font-bold tracking-tight text-foreground">Sentinel v2.5.1</span>
-            </div>
+            <button 
+              onClick={scrollToTop}
+              className="flex items-center gap-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer group"
+            >
+              <Lock className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold tracking-tight text-foreground">Sentinel v2.6.0</span>
+            </button>
             <Link 
               href="/terms" 
               className="flex items-center gap-1 hover:text-primary transition-colors font-medium border-b border-transparent hover:border-primary pb-0.5"
