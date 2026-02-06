@@ -20,6 +20,15 @@ Sentinel is a military-grade password generation and secure vault application bu
 - **AI**: Genkit with Google Gemini
 - **Icons**: Lucide React
 
+## Deployment (Vercel)
+
+If you are deploying to Vercel via GitHub:
+1. Ensure you have exported/downloaded the latest code from this Studio.
+2. Commit and push the changes to your `main` branch.
+3. In Vercel, ensure your **Build Command** is `npm run build`.
+4. Add your Firebase environment variables to Vercel's **Environment Variables** settings.
+5. **CRITICAL**: Add your Vercel deployment URL (e.g., `sentinel-security.vercel.app`) to your Firebase Console under **Authentication > Settings > Authorized domains**.
+
 ## Getting Started
 
 1. Clone the repository.

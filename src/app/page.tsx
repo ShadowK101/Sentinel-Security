@@ -347,7 +347,7 @@ export default function SentinelApp() {
             <Lock className="h-5 w-5 text-primary" />
             <Dialog>
               <DialogTrigger asChild>
-                <span className="font-bold tracking-tight hover:text-primary transition-colors">Sentinel v2.4</span>
+                <span className="font-bold tracking-tight hover:text-primary transition-colors">Sentinel v2.5.1</span>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
