@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -55,9 +54,10 @@ export default function SentinelApp() {
 
   useEffect(() => {
     setLastChecked(new Date().toLocaleTimeString());
+    // Update every hour (3,600,000 ms)
     const interval = setInterval(() => {
       setLastChecked(new Date().toLocaleTimeString());
-    }, 60000);
+    }, 3600000);
     return () => clearInterval(interval);
   }, []);
 
