@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Shield, Lock, ChevronRight, LogOut, Github, KeySquare } from 'lucide-react';
+import { Shield, Lock, LogOut, KeySquare, ShieldCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
@@ -20,6 +20,31 @@ import PasswordGenerator from '@/components/PasswordGenerator';
 import { Vault } from '@/components/Vault';
 import { Badge } from '@/components/ui/badge';
 import { useUser, useAuth } from '@/firebase';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const bestPractices = [
+  {
+    title: "Use high entropy passwords",
+    description: "Master passwords should be at least 16 characters long and include a mix of character types to maximize resistance against brute-force attacks."
+  },
+  {
+    title: "Enable clipboard auto-clear",
+    description: "Keeping passwords in your clipboard is a risk. While we've removed the timer by request, always be mindful of clearing your clipboard manually after use."
+  },
+  {
+    title: "Store recovery keys physically",
+    description: "Never store your master password recovery keys on your digital devices. Print them out and keep them in a safe, physical location like a fireproof safe."
+  },
+  {
+    title: "Avoid reuse across domains",
+    description: "If one account is compromised, hackers will try that same password on other sites. Always generate a unique password for every service you use."
+  }
+];
 
 export default function SentinelApp() {
   const { user, isUserLoading } = useUser();
@@ -40,7 +65,7 @@ export default function SentinelApp() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white">
+    <div className="min-h-screen text-foreground selection:bg-primary selection:text-white">
       {/* Navigation Header */}
       <header className="border-b border-border/40 bg-card/30 backdrop-blur-xl sticky top-0 z-50">
         <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -70,7 +95,7 @@ export default function SentinelApp() {
                 </Button>
               </div>
             ) : (
-              <Button onClick={handleSignIn} size="sm" className="gap-2 bg-primary hover:bg-primary/90 rounded-full px-5">
+              <Button onClick={handleSignIn} size="sm" className="gap-2 bg-primary hover:bg-primary/90 rounded-full px-5 transition-all active:scale-95">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -160,19 +185,21 @@ export default function SentinelApp() {
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2">
                 <KeySquare className="h-3 w-3" /> Best Practices
               </div>
-              <ul className="space-y-3 px-2">
-                {[
-                  "Use high entropy passwords for master accounts.",
-                  "Enable clipboard auto-clear in settings.",
-                  "Store recovery keys physically.",
-                  "Avoid reuse across critical domains."
-                ].map((text, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground group cursor-default">
-                    <ChevronRight className="h-3 w-3 text-primary group-hover:translate-x-1 transition-transform" />
-                    {text}
-                  </li>
+              <Accordion type="single" collapsible className="w-full px-2">
+                {bestPractices.map((bp, i) => (
+                  <AccordionItem key={i} value={`item-${i}`} className="border-primary/10">
+                    <AccordionTrigger className="text-xs text-muted-foreground hover:text-primary transition-colors py-3 hover:no-underline">
+                      <div className="flex items-center gap-2 text-left">
+                        <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span>{bp.title}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-[10px] text-muted-foreground leading-relaxed pb-4">
+                      {bp.description}
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </ul>
+              </Accordion>
             </div>
           </aside>
         </div>
@@ -187,9 +214,6 @@ export default function SentinelApp() {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Sentinel Security. All cryptographic operations performed locally.
           </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-muted-foreground hover:text-white transition-colors"><Github className="h-5 w-5" /></a>
-          </div>
         </div>
       </footer>
 

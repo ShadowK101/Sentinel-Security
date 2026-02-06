@@ -33,7 +33,7 @@
   }
   body {
     @apply text-foreground font-body antialiased;
-    background: radial-gradient(circle at top left, hsl(210, 10%, 35%), hsl(210, 10%, 18%));
+    background: radial-gradient(circle at top left, hsl(210, 5%, 45%), hsl(210, 5%, 20%));
     min-height: 100vh;
     background-attachment: fixed;
   }
