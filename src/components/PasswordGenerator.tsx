@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -79,6 +80,10 @@ export default function PasswordGenerator() {
   const copyToClipboard = () => {
     if (!password) return;
     navigator.clipboard.writeText(password);
+    toast({
+      title: "Copied to Clipboard",
+      description: "Password has been copied to your clipboard safely.",
+    });
   };
 
   const saveToVault = () => {
