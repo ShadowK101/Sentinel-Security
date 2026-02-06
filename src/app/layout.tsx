@@ -6,6 +6,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 export const metadata: Metadata = {
   title: 'Sentinel | Professional Password Manager',
   description: 'Military-grade password generation and secure encrypted vault.',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
