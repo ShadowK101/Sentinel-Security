@@ -1,8 +1,15 @@
+
 "use client"
 
 import React from 'react';
 import { calculateEntropy, getStrengthLabel } from '@/lib/crypto-utils';
 import { cn } from '@/lib/utils';
+import { Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EntropyMeterProps {
   password: string;
@@ -27,8 +34,22 @@ export function EntropyMeter({ password }: EntropyMeterProps) {
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <div className="text-[10px] text-muted-foreground text-right">
-        {entropy} bits of entropy
+      <div className="flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
+        <span>{entropy} bits of entropy</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info className="h-3 w-3 text-primary cursor-help" />
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="p-3 bg-card border-accent/20">
+            <div className="space-y-2 max-w-[220px]">
+              <p className="font-bold text-[10px] uppercase tracking-wider text-primary">Cryptographic Entropy</p>
+              <p className="text-[10px] leading-relaxed text-foreground">
+                Entropy measures the unpredictability of a password. 
+                Higher bit counts mean more possible combinations, making it exponentially harder for attackers to guess or brute-force your credentials.
+              </p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
