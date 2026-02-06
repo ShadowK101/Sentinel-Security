@@ -41,7 +41,7 @@ export function Vault() {
 
   const filteredEntries = (entries || []).filter(e => 
     e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.username?.toLowerCase().includes(search.toLowerCase())
+    (e.username && e.username.toLowerCase().includes(search.toLowerCase()))
   );
 
   if (!user) {

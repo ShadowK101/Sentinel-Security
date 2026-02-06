@@ -45,16 +45,7 @@ export default function PasswordGenerator() {
   const [vaultLabel, setVaultLabel] = useState('');
   const [vaultUsername, setVaultUsername] = useState('');
   const [vaultPassword, setVaultPassword] = useState('');
-  const [hasSetDefaultUsername, setHasSetDefaultUsername] = useState(false);
   const { toast } = useToast();
-
-  // Set default username once when user loads, then allow full manual control
-  useEffect(() => {
-    if (user && user.email && !hasSetDefaultUsername) {
-      setVaultUsername(user.email);
-      setHasSetDefaultUsername(true);
-    }
-  }, [user, hasSetDefaultUsername]);
 
   const generate = useCallback(async () => {
     setIsGenerating(true);
