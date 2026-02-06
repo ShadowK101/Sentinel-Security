@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -46,13 +45,16 @@ export default function PasswordGenerator() {
   const [vaultLabel, setVaultLabel] = useState('');
   const [vaultUsername, setVaultUsername] = useState('');
   const [vaultPassword, setVaultPassword] = useState('');
+  const [hasSetDefaultUsername, setHasSetDefaultUsername] = useState(false);
   const { toast } = useToast();
 
+  // Set default username once when user loads, then allow full manual control
   useEffect(() => {
-    if (user && !vaultUsername) {
-      setVaultUsername(user.email || '');
+    if (user && user.email && !hasSetDefaultUsername) {
+      setVaultUsername(user.email);
+      setHasSetDefaultUsername(true);
     }
-  }, [user, vaultUsername]);
+  }, [user, hasSetDefaultUsername]);
 
   const generate = useCallback(async () => {
     setIsGenerating(true);

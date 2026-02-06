@@ -12,7 +12,7 @@ export default function TermsPage() {
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight">Terms of Service</h1>
-          <p className="text-muted-foreground">Last Updated: October 2023</p>
+          <p className="text-muted-foreground">Last Updated: January 2026</p>
         </div>
 
         <div className="space-y-8 bg-card/50 border border-border/40 p-8 rounded-2xl backdrop-blur-sm">

@@ -1,1 +1,1 @@
- git push https://github.com/ShadowK101/Sentinel-Security main
+git add . && git commit -m 'feat: general maintinance' && git push https://github.com/ShadowK101/Sentinel-Security main

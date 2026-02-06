@@ -37,7 +37,7 @@ If you are deploying to Vercel via GitHub:
    ```bash
    git init
    git add .
-   git commit -m "Update Sentinel to v2.6.0"
+   git commit -m "Update Sentinel to v2.6.1"
    ```
 4. Connect to your GitHub repo:
    ```bash
