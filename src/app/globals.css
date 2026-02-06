@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,7 +33,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply text-foreground font-body antialiased;
+    background: radial-gradient(circle at top left, hsl(210, 10%, 15%), hsl(210, 10%, 8%));
+    min-height: 100vh;
   }
 }
 

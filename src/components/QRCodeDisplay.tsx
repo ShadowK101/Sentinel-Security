@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -10,14 +11,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { QRCodeSVG } from 'qrcode.react';
 
 interface QRCodeDisplayProps {
   data: string;
 }
 
 export function QRCodeDisplay({ data }: QRCodeDisplayProps) {
-  // Simple representation for UI purposes as we don't have a QR lib pre-installed
-  // In a production app, we would use a library like 'qrcode.react'
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -30,29 +30,31 @@ export function QRCodeDisplay({ data }: QRCodeDisplayProps) {
           <DialogTitle>Share via QR Code</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center space-y-4 py-6">
-          <div className="bg-white p-4 rounded-xl">
-             {/* Mock QR implementation using grid patterns */}
-             <div className="grid grid-cols-10 gap-0.5 w-48 h-48 bg-white">
-                {Array.from({ length: 100 }).map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={cn(
-                      "w-full h-full", 
-                      (Math.random() > 0.5 || i < 15 || i > 85) ? "bg-black" : "bg-white"
-                    )} 
-                  />
-                ))}
-             </div>
+          <div className="bg-white p-6 rounded-xl shadow-inner">
+             {data ? (
+               <QRCodeSVG 
+                 value={data} 
+                 size={200}
+                 level="H"
+                 includeMargin={false}
+                 imageSettings={{
+                   src: "/shield.svg", // Mock shield icon source if available
+                   x: undefined,
+                   y: undefined,
+                   height: 24,
+                   width: 24,
+                   excavate: true,
+                 }}
+               />
+             ) : (
+               <div className="w-[200px] h-[200px] bg-secondary animate-pulse rounded-md" />
+             )}
           </div>
-          <p className="text-sm text-center text-muted-foreground">
-            Scan this code to import the credential to another device.
+          <p className="text-sm text-center text-muted-foreground max-w-[250px]">
+            Scan this code with a mobile camera to securely transfer this credential.
           </p>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }
