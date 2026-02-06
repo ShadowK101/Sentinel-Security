@@ -2,7 +2,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, LogOut, KeySquare, ShieldCheck, Activity, Database, CheckCircle2, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { Shield, Lock, LogOut, KeySquare, ShieldCheck, Activity, Database, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
@@ -28,14 +29,6 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -342,46 +335,20 @@ export default function SentinelApp() {
       </main>
 
       <footer className="border-t border-border/40 py-12 mt-20">
-        <div className="container max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
-            <Lock className="h-5 w-5 text-primary" />
-            <Dialog>
-              <DialogTrigger asChild>
-                <span className="font-bold tracking-tight hover:text-primary transition-colors">Sentinel v2.5.1</span>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Terms of Service</DialogTitle>
-                  <DialogDescription>
-                    Please read these terms carefully before using Sentinel.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 text-sm text-muted-foreground">
-                  <section>
-                    <h4 className="font-bold text-foreground">1. Acceptance of Terms</h4>
-                    <p>By accessing and using Sentinel, you agree to be bound by these Terms of Service. If you do not agree, please do not use the application.</p>
-                  </section>
-                  <section>
-                    <h4 className="font-bold text-foreground">2. Security Responsibility</h4>
-                    <p>Sentinel provides tools for password generation and storage. However, the security of your accounts ultimately depends on your own security practices, including the strength of your master credentials and the security of your Google account.</p>
-                  </section>
-                  <section>
-                    <h4 className="font-bold text-foreground">3. Data Privacy</h4>
-                    <p>We take your privacy seriously. All password data is encrypted before being stored. We do not have access to your raw passwords. Your data is stored securely using industry-standard protocols.</p>
-                  </section>
-                  <section>
-                    <h4 className="font-bold text-foreground">4. Limitation of Liability</h4>
-                    <p>Sentinel is provided "as is" without any warranties. We are not responsible for any loss of data or unauthorized access to your accounts resulting from the use of this software.</p>
-                  </section>
-                  <section>
-                    <h4 className="font-bold text-foreground">5. Updates to Terms</h4>
-                    <p>We may update these terms from time to time. Your continued use of the application after such changes constitutes acceptance of the new terms.</p>
-                  </section>
-                </div>
-              </DialogContent>
-            </Dialog>
+        <div className="container max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8 text-xs text-muted-foreground">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex items-center gap-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
+              <Lock className="h-4 w-4 text-primary" />
+              <span className="font-bold tracking-tight text-foreground">Sentinel v2.5.1</span>
+            </div>
+            <Link 
+              href="/terms" 
+              className="flex items-center gap-1 hover:text-primary transition-colors font-medium border-b border-transparent hover:border-primary pb-0.5"
+            >
+              Terms of Service <ExternalLink className="h-3 w-3" />
+            </Link>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p>
             © {new Date().getFullYear()} Sentinel Security. All cryptographic operations performed locally.
           </p>
         </div>
