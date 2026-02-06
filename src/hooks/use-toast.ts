@@ -1,4 +1,3 @@
-
 "use client"
 
 // Inspired by react-hot-toast library
@@ -164,6 +163,11 @@ function toast({ ...props }: Toast) {
       },
     },
   })
+
+  // Set timeout for auto-dismissal
+  setTimeout(() => {
+    dismiss()
+  }, TOAST_REMOVE_DELAY)
 
   return {
     id: id,

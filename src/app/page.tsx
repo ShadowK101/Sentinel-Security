@@ -86,7 +86,7 @@ export default function SentinelApp() {
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight text-white">Security Console</h2>
               <p className="text-muted-foreground text-sm max-w-lg">
-                Generate military-grade credentials using high-entropy random generation or memnonic-based AI passphrases.
+                Generate military-grade credentials using high-entropy random generation and store them in your secure cloud vault.
               </p>
             </div>
 
@@ -156,7 +156,7 @@ export default function SentinelApp() {
               </div>
               <ul className="space-y-3 px-2">
                 {[
-                  "Use passphrases for master accounts.",
+                  "Use high entropy passwords for master accounts.",
                   "Enable clipboard auto-clear in settings.",
                   "Store recovery keys physically.",
                   "Avoid reuse across critical domains."

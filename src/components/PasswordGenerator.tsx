@@ -4,11 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   RefreshCw, 
   Copy, 
-  ShieldCheck, 
   Settings2, 
   Save, 
   Zap, 
-  BookOpen, 
   Info
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -16,13 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EntropyMeter } from '@/components/EntropyMeter';
 import { QRCodeDisplay } from '@/components/QRCodeDisplay';
 import { simpleEncrypt } from '@/lib/crypto-utils';
-import { generatePassphrase } from '@/ai/flows/passphrase-generation';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
@@ -39,51 +35,37 @@ export default function PasswordGenerator() {
     symbols: true,
     excludeAmbiguous: false
   });
-  const [mode, setMode] = useState<'password' | 'passphrase'>('password');
   const [isGenerating, setIsGenerating] = useState(false);
   const [vaultLabel, setVaultLabel] = useState('');
   const { toast } = useToast();
 
   const generate = useCallback(async () => {
     setIsGenerating(true);
-    if (mode === 'password') {
-      let charset = '';
-      if (options.lowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
-      if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      if (options.numbers) charset += '0123456789';
-      if (options.symbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+    let charset = '';
+    if (options.lowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
+    if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (options.numbers) charset += '0123456789';
+    if (options.symbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
 
-      if (options.excludeAmbiguous) {
-        charset = charset.replace(/[Il1O0]/g, '');
-      }
-
-      if (!charset) {
-        setPassword('');
-        setIsGenerating(false);
-        return;
-      }
-
-      let result = '';
-      const array = new Uint32Array(length);
-      window.crypto.getRandomValues(array);
-      for (let i = 0; i < length; i++) {
-        result += charset[array[i] % charset.length];
-      }
-      setPassword(result);
-    } else {
-      try {
-        const result = await generatePassphrase({ numWords: Math.floor(length / 4) || 3 });
-        setPassword(result.passphrase);
-      } catch (err) {
-        toast({ 
-          variant: "destructive", 
-          title: "Generation Error", 
-          description: "Failed to generate passphrase using AI." 
-        });
-      }
+    if (options.excludeAmbiguous) {
+      charset = charset.replace(/[Il1O0]/g, '');
     }
+
+    if (!charset) {
+      setPassword('');
+      setIsGenerating(false);
+      return;
+    }
+
+    let result = '';
+    const array = new Uint32Array(length);
+    window.crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      result += charset[array[i] % charset.length];
+    }
+    setPassword(result);
     setIsGenerating(false);
-  }, [length, options, mode, toast]);
+  }, [length, options]);
 
   useEffect(() => {
     generate();
@@ -105,7 +87,6 @@ export default function PasswordGenerator() {
   const saveToVault = () => {
     if (!user || !password || !vaultLabel || !firestore) return;
     
-    // We use a fixed 'default' vault ID for the MVP
     const credentialsRef = collection(firestore, 'users', user.uid, 'vaults', 'default', 'credentials');
     
     const newCredential = {
@@ -155,95 +136,68 @@ export default function PasswordGenerator() {
 
       <Card className="border-accent/10">
         <CardContent className="p-6">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="password" className="flex items-center gap-2">
-                <Zap className="h-4 w-4" /> Random Password
-              </TabsTrigger>
-              <TabsTrigger value="passphrase" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" /> AI Passphrase
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex items-center gap-2 mb-6">
+            <Zap className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold uppercase tracking-wider">Generator Settings</h3>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label className="text-sm font-medium">Password Length: {length}</Label>
+              </div>
+              <Slider 
+                value={[length]} 
+                onValueChange={([v]) => setLength(v)} 
+                min={8} 
+                max={64} 
+                step={1} 
+              />
+            </div>
 
-            <TabsContent value="password" className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm font-medium">Password Length: {length}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Uppercase Letters</Label>
+                  <p className="text-[10px] text-muted-foreground">(A-Z)</p>
                 </div>
-                <Slider 
-                  value={[length]} 
-                  onValueChange={([v]) => setLength(v)} 
-                  min={8} 
-                  max={64} 
-                  step={1} 
-                />
+                <Switch checked={options.uppercase} onCheckedChange={(v) => setOptions(prev => ({ ...prev, uppercase: v }))} />
               </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Lowercase Letters</Label>
+                  <p className="text-[10px] text-muted-foreground">(a-z)</p>
+                </div>
+                <Switch checked={options.lowercase} onCheckedChange={(v) => setOptions(prev => ({ ...prev, lowercase: v }))} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Numbers</Label>
+                  <p className="text-[10px] text-muted-foreground">(0-9)</p>
+                </div>
+                <Switch checked={options.numbers} onCheckedChange={(v) => setOptions(prev => ({ ...prev, numbers: v }))} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Special Characters</Label>
+                  <p className="text-[10px] text-muted-foreground">(!@#$...)</p>
+                </div>
+                <Switch checked={options.symbols} onCheckedChange={(v) => setOptions(prev => ({ ...prev, symbols: v }))} />
+              </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Uppercase Letters</Label>
-                    <p className="text-[10px] text-muted-foreground">(A-Z)</p>
-                  </div>
-                  <Switch checked={options.uppercase} onCheckedChange={(v) => setOptions(prev => ({ ...prev, uppercase: v }))} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Lowercase Letters</Label>
-                    <p className="text-[10px] text-muted-foreground">(a-z)</p>
-                  </div>
-                  <Switch checked={options.lowercase} onCheckedChange={(v) => setOptions(prev => ({ ...prev, lowercase: v }))} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Numbers</Label>
-                    <p className="text-[10px] text-muted-foreground">(0-9)</p>
-                  </div>
-                  <Switch checked={options.numbers} onCheckedChange={(v) => setOptions(prev => ({ ...prev, numbers: v }))} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Special Characters</Label>
-                    <p className="text-[10px] text-muted-foreground">(!@#$...)</p>
-                  </div>
-                  <Switch checked={options.symbols} onCheckedChange={(v) => setOptions(prev => ({ ...prev, symbols: v }))} />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2 border-t">
-                <Switch 
-                  id="ambiguous" 
-                  checked={options.excludeAmbiguous} 
-                  onCheckedChange={(v) => setOptions(prev => ({ ...prev, excludeAmbiguous: v }))} 
-                />
-                <Label htmlFor="ambiguous" className="text-xs cursor-pointer flex items-center gap-1">
-                  Exclude ambiguous characters (I, l, 1, O, 0)
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </Label>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="passphrase" className="space-y-6">
-              <div className="bg-secondary/30 p-4 rounded-lg border border-primary/20">
-                <div className="flex gap-3">
-                  <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Passphrases use multiple random words from a secure dictionary. They are often more secure against brute-force attacks while being significantly easier for humans to remember.
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Word Count: {Math.floor(length / 4) || 3}</Label>
-                <Slider 
-                  value={[length]} 
-                  onValueChange={([v]) => setLength(v)} 
-                  min={12} 
-                  max={40} 
-                  step={4} 
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+            <div className="flex items-center space-x-2 pt-2 border-t">
+              <Switch 
+                id="ambiguous" 
+                checked={options.excludeAmbiguous} 
+                onCheckedChange={(v) => setOptions(prev => ({ ...prev, excludeAmbiguous: v }))} 
+              />
+              <Label htmlFor="ambiguous" className="text-xs cursor-pointer flex items-center gap-1">
+                Exclude ambiguous characters (I, l, 1, O, 0)
+                <Info className="h-3 w-3 text-muted-foreground" />
+              </Label>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

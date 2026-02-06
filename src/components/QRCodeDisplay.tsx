@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -37,14 +36,6 @@ export function QRCodeDisplay({ data }: QRCodeDisplayProps) {
                  size={200}
                  level="H"
                  includeMargin={false}
-                 imageSettings={{
-                   src: "/shield.svg", // Mock shield icon source if available
-                   x: undefined,
-                   y: undefined,
-                   height: 24,
-                   width: 24,
-                   excavate: true,
-                 }}
                />
              ) : (
                <div className="w-[200px] h-[200px] bg-secondary animate-pulse rounded-md" />
