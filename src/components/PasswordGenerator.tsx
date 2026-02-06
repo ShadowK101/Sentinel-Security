@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -8,7 +9,7 @@ import {
   Save, 
   Zap, 
   Info,
-  User as UserIcon
+  Lock
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export default function PasswordGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [vaultLabel, setVaultLabel] = useState('');
   const [vaultUsername, setVaultUsername] = useState('');
+  const [vaultPassword, setVaultPassword] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function PasswordGenerator() {
 
     if (!charset) {
       setPassword('');
+      setVaultPassword('');
       setIsGenerating(false);
       return;
     }
@@ -77,6 +80,7 @@ export default function PasswordGenerator() {
       result += charset[array[i] % charset.length];
     }
     setPassword(result);
+    setVaultPassword(result);
     setIsGenerating(false);
   }, [length, options]);
 
@@ -94,14 +98,21 @@ export default function PasswordGenerator() {
   };
 
   const saveToVault = () => {
-    if (!user || !password || !vaultLabel || !firestore) return;
+    if (!user || !vaultPassword || !vaultLabel || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please provide a name and a password to save.",
+      });
+      return;
+    }
     
     const credentialsRef = collection(firestore, 'users', user.uid, 'vaults', 'default', 'credentials');
     
     const newCredential = {
       name: vaultLabel,
-      username: vaultUsername || user.email || 'user',
-      password: simpleEncrypt(password, user.uid),
+      username: vaultUsername || 'No Username',
+      password: simpleEncrypt(vaultPassword, user.uid),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       vaultId: 'default'
@@ -229,31 +240,47 @@ export default function PasswordGenerator() {
           <h3 className="text-sm font-semibold uppercase tracking-wider">Vault Actions</h3>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Entry Name</Label>
             <Input 
-              placeholder="e.g., Google, Netflix" 
+              placeholder="e.g., Gmail, Banking, Work" 
               value={vaultLabel} 
               onChange={(e) => setVaultLabel(e.target.value)}
               disabled={!user}
               className="bg-secondary/50"
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Username / Email</Label>
-            <Input 
-              placeholder="Username" 
-              value={vaultUsername} 
-              onChange={(e) => setVaultUsername(e.target.value)}
-              disabled={!user}
-              className="bg-secondary/50"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Username / Email</Label>
+              <Input 
+                placeholder="Username" 
+                value={vaultUsername} 
+                onChange={(e) => setVaultUsername(e.target.value)}
+                disabled={!user}
+                className="bg-secondary/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Password to Save</Label>
+              <div className="relative">
+                <Input 
+                  type="text"
+                  placeholder="Password" 
+                  value={vaultPassword} 
+                  onChange={(e) => setVaultPassword(e.target.value)}
+                  disabled={!user}
+                  className="bg-secondary/50 pr-10 font-mono"
+                />
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+            </div>
           </div>
         </div>
 
         <Button 
-          disabled={!user || !password || !vaultLabel} 
+          disabled={!user || !vaultPassword || !vaultLabel} 
           className="w-full gap-2 h-12 text-sm font-bold shadow-lg shadow-primary/20"
           onClick={saveToVault}
         >
