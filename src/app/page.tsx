@@ -34,6 +34,16 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const bestPractices = [
   {
@@ -59,15 +69,32 @@ export default function SentinelApp() {
   const auth = useAuth();
   const [activeTab, setActiveTab] = useState('generator');
   const [lastChecked, setLastChecked] = useState("");
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     setLastChecked(new Date().toLocaleTimeString());
+    
+    // Check for terms acceptance
+    const accepted = localStorage.getItem('sentinel_terms_accepted');
+    if (!accepted) {
+      setShowTerms(true);
+    }
+
     // Update every hour (3,600,000 ms)
     const interval = setInterval(() => {
       setLastChecked(new Date().toLocaleTimeString());
     }, 3600000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleAcceptTerms = () => {
+    localStorage.setItem('sentinel_terms_accepted', 'true');
+    setShowTerms(false);
+  };
+
+  const handleDenyTerms = () => {
+    window.location.href = 'https://www.google.com';
+  };
 
   const handleSignIn = async () => {
     try {
@@ -84,6 +111,59 @@ export default function SentinelApp() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-primary selection:text-white">
+      {/* Initial Terms of Service Dialog */}
+      <AlertDialog open={showTerms}>
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Shield className="h-6 w-6 text-primary" />
+              Welcome to Sentinel
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Before you proceed to the secure console, please review and accept our professional Terms of Service.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 my-4 space-y-4 text-sm text-muted-foreground">
+            <section>
+              <h4 className="font-bold text-foreground">1. Acceptance of Terms</h4>
+              <p>By accessing and using Sentinel, you agree to be bound by these Terms of Service. These terms constitute a legally binding agreement between you and Sentinel Security.</p>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground">2. Security Responsibility</h4>
+              <p>Sentinel provides cryptographic tools for password generation and storage. The security of your data depends on your own practices, including the strength of your master credentials and the security of your Google account.</p>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground">3. Data Privacy & Encryption</h4>
+              <p>We take your privacy seriously. All sensitive data is encrypted before storage. Sentinel staff do not have access to your raw passwords. Your data is stored securely using industry-standard protocols.</p>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground">4. Limitation of Liability</h4>
+              <p>Sentinel is provided "as is" without any warranties. We are not responsible for any loss of data, unauthorized access, or security breaches resulting from the use or misuse of this software.</p>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground">5. Compliance</h4>
+              <p>Users are responsible for ensuring their use of Sentinel complies with all local and international laws regarding cryptography and data management.</p>
+            </section>
+          </div>
+
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel 
+              onClick={handleDenyTerms}
+              className="w-full sm:w-auto border-destructive text-destructive hover:bg-destructive hover:text-white"
+            >
+              Deny & Exit
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleAcceptTerms}
+              className="w-full sm:w-auto"
+            >
+              Accept & Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Navigation Header */}
       <header className="border-b border-border/40 bg-card/30 backdrop-blur-xl sticky top-0 z-50">
         <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
