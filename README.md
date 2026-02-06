@@ -29,12 +29,22 @@ If you are deploying to Vercel via GitHub:
 4. Add your Firebase environment variables to Vercel's **Environment Variables** settings.
 5. **CRITICAL**: Add your Vercel deployment URL (e.g., `sentinel-security.vercel.app`) to your Firebase Console under **Authentication > Settings > Authorized domains**.
 
-## Getting Started
+## How to push to GitHub
 
-1. Clone the repository.
-2. Install dependencies: `npm install`
-3. Configure your Firebase environment variables in `.env`.
-4. Run the development server: `npm run dev`
+1. Download/Export your project files from Firebase Studio.
+2. Open your terminal in the project folder.
+3. Initialize the repository (if not done):
+   ```bash
+   git init
+   git add .
+   git commit -m "Update Sentinel to v2.6.0"
+   ```
+4. Connect to your GitHub repo:
+   ```bash
+   git remote add origin YOUR_GITHUB_REPO_URL
+   git branch -M main
+   git push -u origin main
+   ```
 
 ## Security
 
