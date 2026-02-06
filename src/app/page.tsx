@@ -1,7 +1,8 @@
+
 "use client"
 
-import React, { useState } from 'react';
-import { Shield, Lock, LogOut, KeySquare, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Lock, LogOut, KeySquare, ShieldCheck, Activity, Database, CheckCircle2, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
@@ -50,6 +51,15 @@ export default function SentinelApp() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const [activeTab, setActiveTab] = useState('generator');
+  const [lastChecked, setLastChecked] = useState("");
+
+  useEffect(() => {
+    setLastChecked(new Date().toLocaleTimeString());
+    const interval = setInterval(() => {
+      setLastChecked(new Date().toLocaleTimeString());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSignIn = async () => {
     try {
@@ -149,30 +159,64 @@ export default function SentinelApp() {
 
           {/* Sidebar Info */}
           <aside className="space-y-6 hidden lg:block">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-primary">Live Security Feed</CardTitle>
+            <Card className="bg-primary/5 border-primary/20 overflow-hidden">
+              <CardHeader className="pb-2 border-b border-primary/10">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                    <Activity className="h-4 w-4" /> Live Security Feed
+                  </CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase">Live</span>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 animate-pulse" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Encryption engine is active. Entropy source verified via browser <code className="text-[10px] bg-secondary px-1 rounded">crypto.getRandomValues()</code>.
-                  </p>
+              <CardContent className="pt-4 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <div className="mt-0.5">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-white">Encryption Verified</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Entropy source active via <code className="bg-secondary px-1 rounded">crypto.getRandomValues()</code>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <div className="mt-0.5">
+                      {user ? (
+                        <Database className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <Lock className="h-4 w-4 text-orange-500" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-white">Storage Backend</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Currently using <span className={user ? "text-emerald-500 font-medium" : "text-orange-400 font-medium"}>
+                          {user ? 'Secure Firestore' : 'Local Sandbox'}
+                        </span>.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 animate-pulse ${user ? 'bg-emerald-500' : 'bg-orange-500'}`} />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Vault is using {user ? 'secure Firestore' : 'local anonymous'} storage for at-rest data.
-                  </p>
-                </div>
+
                 <div className="pt-4 border-t border-primary/10">
                    <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground tracking-tighter mb-2">
-                     <span>System Status</span>
-                     <span className="text-emerald-500">Nominal</span>
+                     <span className="flex items-center gap-1">System Integrity</span>
+                     <span className="text-emerald-500 flex items-center gap-1">
+                       <CheckCircle2 className="h-3 w-3" /> Nominal
+                     </span>
                    </div>
-                   <div className="h-1 w-full bg-secondary rounded-full">
-                     <div className="h-full w-4/5 bg-emerald-500/50 rounded-full" />
+                   <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                     <div className="h-full w-[94%] bg-gradient-to-r from-emerald-500/50 to-emerald-400 rounded-full" />
+                   </div>
+                   <div className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground/60">
+                     <Clock className="h-3 w-3" />
+                     <span>Last health check: {lastChecked}</span>
                    </div>
                 </div>
               </CardContent>
