@@ -105,7 +105,9 @@ export default function SentinelApp() {
       toast({
         variant: "destructive",
         title: "Authentication Error",
-        description: error.message || "Sign in failed. Please check your domain authorization in Firebase Console.",
+        description: error.code === 'auth/unauthorized-domain' 
+          ? "This domain is not authorized for Google Sign-In. Please add it to your Firebase Console under Authentication > Settings > Authorized domains."
+          : error.message || "Sign in failed.",
       });
     }
   };
