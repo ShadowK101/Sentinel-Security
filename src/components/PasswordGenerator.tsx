@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -8,7 +7,8 @@ import {
   Settings2, 
   Save, 
   Zap, 
-  Info
+  Info,
+  User as UserIcon
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,14 @@ export default function PasswordGenerator() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [vaultLabel, setVaultLabel] = useState('');
+  const [vaultUsername, setVaultUsername] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user && !vaultUsername) {
+      setVaultUsername(user.email || '');
+    }
+  }, [user, vaultUsername]);
 
   const generate = useCallback(async () => {
     setIsGenerating(true);
@@ -93,7 +100,7 @@ export default function PasswordGenerator() {
     
     const newCredential = {
       name: vaultLabel,
-      username: user.email || 'user',
+      username: vaultUsername || user.email || 'user',
       password: simpleEncrypt(password, user.uid),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -216,28 +223,43 @@ export default function PasswordGenerator() {
         </CardContent>
       </Card>
 
-      <div className="bg-card border rounded-xl p-6 space-y-4">
+      <div className="bg-card border rounded-xl p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
           <Settings2 className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold uppercase tracking-wider">Vault Actions</h3>
         </div>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-             <Input 
-                placeholder="Entry label (e.g., Google Account)" 
-                value={vaultLabel} 
-                onChange={(e) => setVaultLabel(e.target.value)}
-                disabled={!user}
-             />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Entry Name</Label>
+            <Input 
+              placeholder="e.g., Google, Netflix" 
+              value={vaultLabel} 
+              onChange={(e) => setVaultLabel(e.target.value)}
+              disabled={!user}
+              className="bg-secondary/50"
+            />
           </div>
-          <Button 
-            disabled={!user || !password || !vaultLabel} 
-            className="gap-2"
-            onClick={saveToVault}
-          >
-            <Save className="h-4 w-4" /> Save to Vault
-          </Button>
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Username / Email</Label>
+            <Input 
+              placeholder="Username" 
+              value={vaultUsername} 
+              onChange={(e) => setVaultUsername(e.target.value)}
+              disabled={!user}
+              className="bg-secondary/50"
+            />
+          </div>
         </div>
+
+        <Button 
+          disabled={!user || !password || !vaultLabel} 
+          className="w-full gap-2 h-12 text-sm font-bold shadow-lg shadow-primary/20"
+          onClick={saveToVault}
+        >
+          <Save className="h-4 w-4" /> Save Entry to Vault
+        </Button>
+        
         {!user && (
           <p className="text-[10px] text-muted-foreground text-center">
             Sign in with Google to enable the secure cloud vault feature.
